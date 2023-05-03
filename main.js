@@ -37,40 +37,6 @@ class BasicCharacterController {
 
   _LoadModels() {
     const loader = new FBXLoader();
-    loader.setPath('./resources/zombie/');
-    loader.load('mremireh_o_desbiens.fbx', (fbx) => {
-      fbx.scale.setScalar(0.1);
-      fbx.traverse(c => {
-        c.castShadow = true;
-      });
-
-      this._target = fbx;
-      this._params.scene.add(this._target);
-
-      this._mixer = new THREE.AnimationMixer(this._target);
-
-      this._manager = new THREE.LoadingManager();
-      this._manager.onLoad = () => {
-        this._stateMachine.SetState('idle');
-      };
-
-      const _OnLoad = (animName, anim) => {
-        const clip = anim.animations[0];
-        const action = this._mixer.clipAction(clip);
-  
-        this._animations[animName] = {
-          clip: clip,
-          action: action,
-        };
-      };
-
-      const loader = new FBXLoader(this._manager);
-      loader.setPath('./resources/zombie/');
-      loader.load('walk.fbx', (a) => { _OnLoad('walk', a); });
-      loader.load('run.fbx', (a) => { _OnLoad('run', a); });
-      loader.load('idle.fbx', (a) => { _OnLoad('idle', a); });
-      loader.load('dance.fbx', (a) => { _OnLoad('dance', a); });
-    });
   }
 
   Update(timeInSeconds) {
@@ -537,6 +503,16 @@ class CharacterControllerDemo {
     plane.receiveShadow = true;
     plane.rotation.x = -Math.PI / 2;
     this._scene.add(plane);
+
+    const owo = new THREE.Mesh(
+      new THREE.BoxGeometry(2, 2, 2),
+      new THREE.MeshStandardMaterial({
+          color: 0x808080,
+        }));
+    owo.position.set(0,1,0);
+    owo.castShadow = true;
+    owo.receiveShadow = true;
+    this._scene.add(owo);
 
     this._mixers = [];
     this._previousRAF = null;
