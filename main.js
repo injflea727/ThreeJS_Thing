@@ -5,17 +5,6 @@ import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/js
 import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.118/examples/jsm/controls/OrbitControls.js';
 
 
-class BasicCharacterControllerProxy {
-  constructor(animations) {
-    this._animations = animations;
-  }
-
-  get animations() {
-    return this._animations;
-  }
-};
-
-
 class BasicCharacterController {
   constructor(params) {
     this._Init(params);
@@ -27,17 +16,28 @@ class BasicCharacterController {
     this._acceleration = new THREE.Vector3(1, 0.25, 50.0);
     this._velocity = new THREE.Vector3(0, 0, 0);
 
-    this._animations = {};
     this._input = new BasicCharacterControllerInput();
+
+    this._LoadModels();
   }
 
+  _LoadModels() {
+  const boxGeometry = THREE.BoxGeometry(2, 2, 2);
+  const material = THREE.MeshStandardMaterial({color: 0x000000,});
+  this._target = new THREE.Mesh(BoxGeometry,material);
+  this._target.scale.setScalar(0.1);
+  this._target.traverse(c => {
+        c.castShadow = true;
+      });
+    this._params.scene.add(this._target);
+    const box = new THREE.Mesh();
+    box.receiveShadow = true;
+  }
 
   Update(timeInSeconds) {
     if (!this._target) {
       return;
     }
-
-    this._stateMachine.Update(timeInSeconds, this._input);
 
     const velocity = this._velocity;
     const frameDecceleration = new THREE.Vector3(
@@ -59,10 +59,6 @@ class BasicCharacterController {
     const acc = this._acceleration.clone();
     if (this._input._keys.shift) {
       acc.multiplyScalar(2.0);
-    }
-
-    if (this._stateMachine._currentState.Name == 'dance') {
-      acc.multiplyScalar(0.0);
     }
 
     if (this._input._keys.forward) {
@@ -102,10 +98,6 @@ class BasicCharacterController {
     controlObject.position.add(sideways);
 
     oldPosition.copy(controlObject.position);
-
-    if (this._mixer) {
-      this._mixer.update(timeInSeconds);
-    }
   }
 };
 
@@ -251,22 +243,21 @@ class CharacterControllerDemo {
     plane.rotation.x = -Math.PI / 2;
     this._scene.add(plane);
 
-    const owo = new THREE.Mesh(
-      new THREE.BoxGeometry(2, 2, 2),
-      new THREE.MeshStandardMaterial({
-          color: 0x000000,
-        }));
-    owo.position.set(0,1,0);
-    owo.castShadow = true;
-    owo.receiveShadow = true;
-    this._scene.add(owo);
+    
 
-    this._mixers = [];
     this._previousRAF = null;
 
+    this._LoadAnimatedModel();
     this._RAF();
   }
 
+  _LoadAnimatedModel() {
+    const params = {
+      camera: this._camera,
+      scene: this._scene,
+    }
+    this._controls = new BasicCharacterController(params);
+  }
 
 
   _OnWindowResize() {
@@ -291,10 +282,7 @@ class CharacterControllerDemo {
 
   _Step(timeElapsed) {
     const timeElapsedS = timeElapsed * 0.001;
-    if (this._mixers) {
-      this._mixers.map(m => m.update(timeElapsedS));
-    }
-
+    
     if (this._controls) {
       this._controls.Update(timeElapsedS);
     }
