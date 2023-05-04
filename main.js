@@ -22,16 +22,15 @@ class BasicCharacterController {
   }
 
   _LoadModels() {
-  const boxGeometry = THREE.BoxGeometry(2, 2, 2);
-  const material = THREE.MeshStandardMaterial({color: 0x000000,});
-  this._target = new THREE.Mesh(BoxGeometry,material);
-  this._target.scale.setScalar(0.1);
+  const boxGeometry = new THREE.BoxGeometry(2, 2, 2);
+  const material = new THREE.MeshStandardMaterial({color: 0x000000,});
+  this._target = new THREE.Mesh(boxGeometry,material);
+  this._target.scale.setScalar(1);
   this._target.traverse(c => {
         c.castShadow = true;
       });
     this._params.scene.add(this._target);
-    const box = new THREE.Mesh();
-    box.receiveShadow = true;
+    this._target.position.set(0,1,0)
   }
 
   Update(timeInSeconds) {
@@ -62,10 +61,10 @@ class BasicCharacterController {
     }
 
     if (this._input._keys.forward) {
-      velocity.z += acc.z * timeInSeconds;
+      velocity.z -= acc.z * timeInSeconds;
     }
     if (this._input._keys.backward) {
-      velocity.z -= acc.z * timeInSeconds;
+      velocity.z += acc.z * timeInSeconds;
     }
     if (this._input._keys.left) {
       _A.set(0, 1, 0);
@@ -282,7 +281,7 @@ class CharacterControllerDemo {
 
   _Step(timeElapsed) {
     const timeElapsedS = timeElapsed * 0.001;
-    
+
     if (this._controls) {
       this._controls.Update(timeElapsedS);
     }
