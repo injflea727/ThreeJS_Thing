@@ -235,11 +235,6 @@ class CharacterControllerDemo {
     plane.rotation.x = -Math.PI / 2;
     this._scene.add(plane);
 
-    const hotel = new THREE.Mesh( 
-      new THREE.BoxGeometry(2, 4, 2),
-      new THREE.MeshStandardMaterial({color: 0x000000,}));
-    this._scene.add(hotel);
-    hotel.position(1,100,1);
 
     this._previousRAF = null;
 
