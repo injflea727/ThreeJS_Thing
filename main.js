@@ -236,13 +236,13 @@ class CharacterControllerDemo {
     this._scene.add(plane);
 
     const hotel = new THREE.Mesh(
-      new THREE.BoxGeometry(5,10,5),
+      new THREE.BoxGeometry(10,20,10),
     new THREE.MeshStandardMaterial({
       color: 0x418782, 
     }));
     hotel.castShadow = false;
     hotel.receiveShadow = true;
-    hotel.position.set(10,10,10);
+    hotel.position.set(10,0,0);
     this._scene.add(hotel);
     this._previousRAF = null;
 
