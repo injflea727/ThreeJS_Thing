@@ -237,7 +237,7 @@ class CharacterControllerDemo {
 
     const hotel = new THREE.Mesh(new THREE.BoxGeometry(5,10,5),
     new THREE.MeshStandardMaterial({
-      color: 0x808080,
+      color: 0x808080, 
     }));
     hotel.castShadow = false;
     hotel.receiveShadow = true;
