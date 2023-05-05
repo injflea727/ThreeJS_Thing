@@ -242,7 +242,7 @@ class CharacterControllerDemo {
     }));
     hotel.castShadow = false;
     hotel.receiveShadow = true;
-    hotel.position.set(40,30,0); 
+    hotel.position.set(40,37,0); 
     this._scene.add(hotel);
 
     const teleport = new THREE.Mesh(
