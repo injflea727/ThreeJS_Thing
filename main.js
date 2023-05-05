@@ -235,6 +235,7 @@ class CharacterControllerDemo {
     plane.rotation.x = -Math.PI / 2;
     this._scene.add(plane);
 
+    
 
     this._previousRAF = null;
 
