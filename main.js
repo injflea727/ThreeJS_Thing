@@ -111,7 +111,6 @@ class BasicCharacterControllerInput {
       backward: false,
       left: false,
       right: false,
-      space: false,
       shift: false,
     };
     document.addEventListener('keydown', (e) => this._onKeyDown(e), false);
@@ -132,9 +131,6 @@ class BasicCharacterControllerInput {
       case 68: // d
         this._keys.right = true;
         break;
-      case 32: // SPACE
-        this._keys.space = true;
-        break;
       case 16: // SHIFT
         this._keys.shift = true;
         break;
@@ -154,9 +150,6 @@ class BasicCharacterControllerInput {
         break;
       case 68: // d
         this._keys.right = false;
-        break;
-      case 32: // SPACE
-        this._keys.space = false;
         break;
       case 16: // SHIFT
         this._keys.shift = false;
@@ -242,7 +235,11 @@ class CharacterControllerDemo {
     plane.rotation.x = -Math.PI / 2;
     this._scene.add(plane);
 
-    
+    const boxGeometry = new THREE.BoxGeometry(20, 40, 20);
+    const material = new THREE.MeshStandardMaterial({color: 0x000000,});
+    const hotel = new THREE.Mesh(boxGeometry,material);
+    hotel.position(1,100,1);
+    this._scene.add(hotel);
 
     this._previousRAF = null;
 
@@ -270,9 +267,7 @@ class CharacterControllerDemo {
       if (this._previousRAF === null) {
         this._previousRAF = t;
       }
-
       this._RAF();
-
       this._threejs.render(this._scene, this._camera);
       this._Step(t - this._previousRAF);
       this._previousRAF = t;
@@ -287,7 +282,6 @@ class CharacterControllerDemo {
     }
   }
 }
-
 
 let _APP = null;
 
