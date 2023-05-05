@@ -251,6 +251,7 @@ class CharacterControllerDemo {
       color: 0x000000, 
     }));
     teleport.position.set(20,5,0); 
+    this._scene.add(teleport);
     this._previousRAF = null;
 
     this._LoadAnimatedModel();
