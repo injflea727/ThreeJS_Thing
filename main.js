@@ -30,7 +30,7 @@ class BasicCharacterController {
         c.castShadow = true;
       });
     this._params.scene.add(this._target);
-    this._target.position.set(0,1,0)
+    this._target.position.set(0,1,0);
   }
 
   Update(timeInSeconds) {
@@ -242,8 +242,8 @@ class CharacterControllerDemo {
     }));
     hotel.castShadow = false;
     hotel.receiveShadow = true;
-    this._scene.add(hotel);
     hotel.position.set(10,10,10);
+    this._scene.add(hotel);
     this._previousRAF = null;
 
     this._LoadAnimatedModel();
