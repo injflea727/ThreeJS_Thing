@@ -242,7 +242,7 @@ class CharacterControllerDemo {
     }));
     hotel.castShadow = false;
     hotel.receiveShadow = true;
-    hotel.position.set(10,0,0); 
+    hotel.position.set(10,-2,0); 
     this._scene.add(hotel);
     this._previousRAF = null;
 
