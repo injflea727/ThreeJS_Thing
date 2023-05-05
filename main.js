@@ -242,7 +242,7 @@ class CharacterControllerDemo {
     hotel.castShadow = false;
     hotel.receiveShadow = true;
     this._scene.add(hotel);
-    hotel.position.set(0,100,0)
+    hotel.position.set(10,10,10)
     this._previousRAF = null;
 
     this._LoadAnimatedModel();
