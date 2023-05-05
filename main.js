@@ -236,7 +236,7 @@ class CharacterControllerDemo {
     this._scene.add(plane);
 
     const hotel = new THREE.Mesh( 
-      new THREE.BoxGeometry(20, 40, 20),
+      new THREE.BoxGeometry(2, 4, 2),
       new THREE.MeshStandardMaterial({color: 0x000000,}));
     this._scene.add(hotel);
     hotel.position(1,100,1);
