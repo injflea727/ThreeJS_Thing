@@ -244,6 +244,13 @@ class CharacterControllerDemo {
     hotel.receiveShadow = true;
     hotel.position.set(40,40,0); 
     this._scene.add(hotel);
+
+    const teleport = new THREE.Mesh(
+      new THREE.BoxGeometry(10,10,10),
+    new THREE.MeshStandardMaterial({
+      color: 0x000000, 
+    }));
+    teleport.position.set(20,5,0); 
     this._previousRAF = null;
 
     this._LoadAnimatedModel();
