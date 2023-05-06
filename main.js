@@ -250,7 +250,7 @@ class CharacterControllerDemo {
     new THREE.MeshStandardMaterial({
       color: 0x000000, 
     }));
-    teleport.position.set(20,5,0); 
+    teleport.position.set(20,9,0); 
     this._scene.add(teleport);
     this._previousRAF = null;
 
