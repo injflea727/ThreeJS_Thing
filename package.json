@@ -1,3 +1,7 @@
 {
-  "homepage": "/name-of-your-project/"
+  "scripts": {
+    "build": "webpack --config main.js"
+},
+  "homepage": "/ThreeJS_Thing/"
+
 }
