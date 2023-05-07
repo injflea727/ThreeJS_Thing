@@ -1,9 +1,10 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.118/build/three.module.js';
 
-import {FBXLoader} from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/FBXLoader.js';
-import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/GLTFLoader.js';
-import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.118/examples/jsm/controls/OrbitControls.js';
 import {FirstPersonControls} from 'https://cdn.skypack.dev/three@0.136/examples/jsm/controls/FirstPersonControls.js';
+
+function clamp(x, a, b) {
+  return Math.min(Math.max(x, a), b);
+}
 
 class InputController{
   constructor() {
@@ -13,6 +14,8 @@ class InputController{
 this.current_ = {
       leftbutton: false,
       rightbutton: false,
+      mouseXDelta: 0,
+      mouseYDelta: 0,
       mouseX: 0,
       mouseY: 0,
     };
@@ -77,13 +80,15 @@ this.current_ = {
     this.previous_ = {...this.current_};
   }
 }
-class FirstPersonCamera_{
+
+class FirstPersonCamera{
   constructor(camera){
-    this._camera = camera;
+    this.camera_ = camera;
     this.input_ = new InputController();
     this.rotation_ = new THREE.Quaternion();
     this.translation_ = new THREE.Vector3();
     this.phi_ = 0;
+
     this.theta_ = 0;
   }
 
@@ -93,19 +98,33 @@ class FirstPersonCamera_{
   }
 
   updateCamera_(_) {
-    this._camera.quaternion.copy(this.rotation_);
+    this.camera_.quaternion.copy(this.rotation_);
   }
 
   updateTranslation_(timeElapsedS){
-    const forwardVelocity =  (this.input_.key(KEYS.w) ? 1 : 0)
+    const forwardVelocity =  (this.input_.key(KEYS.w) ? 1 : 0) + (this.input_.key(KEYS.s) ? -1 : 0);
+    const strafeVelocity =  (this.input_.key(KEYS.a) ? 1 : 0) + (this.input_.key(KEYS.d) ? -1 : 0);
+
+    const qx = new THREE.Quaternion();
+    qx.setFromAxisAngle(new THREE.Vector3(0,1,0), this.phi_);
+
+    const forward = new THREE.Vector3(0,0,-1);
+    forward.applyQuaternion(qx);
+    forward.multiplyScalar(forwardVelocity * timeElapsedS * 10);
+
+    const left = new THREE.Vector3(-1,0,0);
+    left.applyQuaternion(qx);
+    left.multiplyScalar(strafeVelocity * timeElapsedS * 10);
+
+    this.translation_.add(forward);
+    this.translation_.add(left);
   }
 
   updadeRotation_(timeElapsedS){
     const xh = this.input_.current_.mouseXDelta / window.innerWidth;
     const yh = this.input_.current_.mouseYDelta / window.innerHeight;
-    const ur_mum = 3;
     this.phi_ += -xh * 5; 
-    this.theta_ = clamp(this.theta_ + -yh * 5, Math.PI / ur_mum, Math.PI / ur_mum);
+    this.theta_ = clamp(this.theta_ + -yh * 5, Math.PI / 3, Math.PI / 3);
 
     const qx = new THREE.Quaternion();
     qx.setFromAxisAngle(new THREE.Vector3(0,1,0), this.phi_);
@@ -147,6 +166,20 @@ class CharacterControllerDemo {
   }
     
   _Initialize() {
+    this.InitializeDemo_();
+    this.InitializeRender_();
+    this.InitializeLights_();
+    this.InitializeScene_();
+
+    this._previousRAF = null;
+    this._OnWindowResize();
+    this._RAF();
+  }
+    InitializeDemo_() {
+      this.fpsCamera_ = new FirstPersonCamera(this.camera_);
+    }
+
+    InitializeRender_(){
     this._threejs = new THREE.WebGLRenderer({
       antialias: true,
     });
@@ -167,11 +200,17 @@ class CharacterControllerDemo {
     const aspect = 1920 / 1080;
     const near = 1.0;
     const far = 1000.0;
-    this._camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    this._camera.position.set(10, 2, 10);
+    this.camera_ = new THREE.PerspectiveCamera(fov, aspect, near, far);
+    this.camera_.position.set(10, 2, 10);
 
     this._scene = new THREE.Scene();
 
+    this.uiCamera_ = new THREE.OrthographicCamera(
+      -1, 1, 1 * aspect, -1 * aspect, 1, 1000);
+    this.uiScene_ = new THREE.Scene();
+    }
+
+    InitializeLights_() {
     let light = new THREE.DirectionalLight(0xFFFFFF, 1.0);
     light.position.set(-100, 100, 100);
     light.target.position.set(0, 0, 0);
@@ -188,15 +227,12 @@ class CharacterControllerDemo {
     light.shadow.camera.top = 50;
     light.shadow.camera.bottom = -50;
     this._scene.add(light);
-
-    this.uiCamera_ = new THREE.OrthographicCamera(
-      -1, 1, 1 * aspect, -1 * aspect, 1, 1000);
-  this.uiScene_ = new THREE.Scene();
     
     light = new THREE.AmbientLight(0xFFFFFF, 0.25);
     this._scene.add(light);
+    }
 
-
+    InitializeScene_(){
     const loader = new THREE.CubeTextureLoader();
     const texture = loader.load([
         './resources/posx.jpg',
@@ -231,28 +267,11 @@ class CharacterControllerDemo {
     new THREE.MeshStandardMaterial({color: 0x000000, }));
     teleport.position.set(23,5,0); 
     this._scene.add(teleport);
-    this._previousRAF = null;
-
-    this._LoadAnimatedModel();
-    this._RAF();
-    this.InitializeDemo_();
-  }
-
-  InitializeDemo_() {
-    this.fpsCamera_ = new FirstPersonCamera_(_this.camera);
-  }
-  _LoadAnimatedModel() {
-    const params = {
-      camera: this._camera,
-      scene: this._scene,
     }
-    this._controls = new BasicCharacterController(params);
-  }
-
 
   _OnWindowResize() {
-    this._camera.aspect = window.innerWidth / window.innerHeight;
-    this._camera.updateProjectionMatrix();
+    this.camera_.aspect = window.innerWidth / window.innerHeight;
+    this.camera_.updateProjectionMatrix();
     this._threejs.setSize(window.innerWidth, window.innerHeight);
   }
 
@@ -261,11 +280,13 @@ class CharacterControllerDemo {
       if (this._previousRAF === null) {
         this._previousRAF = t;
       }
-      this._RAF();
-      this._threejs.render(this._scene, this._camera);
       this._Step(t - this._previousRAF);
-      this.threejs_.render(this.uiScene_, this.uiCamera_);
+      this.threejs_.autoClear = true;
+      this._threejs.render(this._scene, this.camera_);
+      this.threejs_.autoClear = false;
+      this._threejs.render(this.uiScene_, this.uiCamera_);
       this._previousRAF = t;
+      this._RAF();
     });
   }
 
@@ -273,9 +294,8 @@ class CharacterControllerDemo {
     const timeElapsedS = timeElapsed * 0.001;
 
       //this._controls.Update(timeElapsedS);
-      this.fpsCamera_.update(timeElapsedS);
+      this.fpsCamera_.Update(timeElapsedS);
   }
-  
 }
 
 let _APP = null;
