@@ -2,6 +2,13 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.118/build/three.mod
 
 import {FirstPersonControls} from 'https://cdn.skypack.dev/three@0.136/examples/jsm/controls/FirstPersonControls.js';
 
+const KEYS = {
+  'a': 65,
+  's': 83,
+  'w': 87,
+  'd': 68,
+};
+
 function clamp(x, a, b) {
   return Math.min(Math.max(x, a), b);
 }
@@ -73,7 +80,7 @@ this.current_ = {
   }
 
   onKeyUp_ (e) {
-    this.keys_[e.keyCode] = true;
+    this.keys_[e.keyCode] = false;
   }
 
   update_() {
@@ -138,27 +145,6 @@ class FirstPersonCamera{
     this.rotation_.copy(q);
   }
 }
-
-class BasicCharacterController {
-  constructor(params) {
-    this._Init(params);
-  }
-
-  _Init(params) {
-    this._params = params;
-    this._LoadModels();
-  }
-
-  _LoadModels() {
-  const boxGeometry = new THREE.BoxGeometry(2, 2, 2);
-  const material = new THREE.MeshStandardMaterial({color: 0x000000,});
-  this._target = new THREE.Mesh(boxGeometry,material);
-  this._target.scale.setScalar(1);
-  this._target.traverse(c => { c.castShadow = true;});
-    this._params.scene.add(this._target);
-    this._target.position.set(0,1,0);
-  }
-};
 
 class CharacterControllerDemo {
   constructor() {
@@ -303,3 +289,23 @@ let _APP = null;
 window.addEventListener('DOMContentLoaded', () => {
   _APP = new CharacterControllerDemo();
 });
+// class BasicCharacterController {
+//   constructor(params) {
+//     this._Init(params);
+//   }
+
+//   _Init(params) {
+//     this._params = params;
+//     this._LoadModels();
+//   }
+
+//   _LoadModels() {
+//   const boxGeometry = new THREE.BoxGeometry(2, 2, 2);
+//   const material = new THREE.MeshStandardMaterial({color: 0x000000,});
+//   this._target = new THREE.Mesh(boxGeometry,material);
+//   this._target.scale.setScalar(1);
+//   this._target.traverse(c => { c.castShadow = true;});
+//     this._params.scene.add(this._target);
+//     this._target.position.set(0,1,0);
+//   }
+// };
