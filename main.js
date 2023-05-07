@@ -3,7 +3,122 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.118/build/three.mod
 import {FBXLoader} from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/FBXLoader.js';
 import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/GLTFLoader.js';
 import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.118/examples/jsm/controls/OrbitControls.js';
+import {FirstPersonControls} from 'https://cdn.skypack.dev/three@0.136/examples/jsm/controls/FirstPersonControls.js';
 
+class InputController{
+  constructor() {
+    this.Initialize_();
+  }
+  Initialize_(){
+this.current_ = {
+      leftbutton: false,
+      rightbutton: false,
+      mouseX: 0,
+      mouseY: 0,
+    };
+    this.previous_ = null;
+    this.keys_ = {};
+    this.previousKeys_ = {};
+
+    document.addEventListener('mousedown',(e) => this.onMouseDown_(e),false);
+    document.addEventListener('mouseup',(e) => this.onMouseUp_(e),false);
+    document.addEventListener('mousemove',(e) => this.onMouseMove_(e),false);
+    document.addEventListener('keydown',(e) => this.onKeyDown_(e),false);
+    document.addEventListener('keyup',(e) => this.onKeyUp_(e),false);
+  }
+
+    onMouseDown_(e){
+    switch(e.button){
+      case 0: {
+        this.current_.leftbutton = true;
+        break;
+      }
+      case 2: {
+        this.current_.rightbutton = true;
+        break;
+      }
+    }
+  }
+
+  onMouseUp_(e){
+    switch(e.button){
+      case 0: {
+        this.current_.leftbutton = false;
+        break;
+      }
+      case 2: {
+        this.current_.rightbutton = false;
+        break;
+      }
+    }
+  }
+
+  onMouseMove_(e) {
+  this.current_.mouseX = e.pageX - window.innerWidth/2;
+  this.current_.mouseY = e.pageY - window.innerHeight/2;
+
+  if (this.previous_ === null) {
+      this.previous_ ={...this.current_};
+    }
+
+    this.current_.mouseXDelta = this.current_.mouseX - this.previous_.mouseX;
+    this.current_.mouseYDelta = this.current_.mouseY - this.previous_.mouseY;
+  }
+
+  onKeyDown_(e) {
+    this.keys_[e.keyCode] = true;
+  }
+
+  onKeyUp_ (e) {
+    this.keys_[e.keyCode] = true;
+  }
+
+  update_() {
+    this.previous_ = {...this.current_};
+  }
+}
+class FirstPersonCamera_{
+  constructor(camera){
+    this._camera = camera;
+    this.input_ = new InputController();
+    this.rotation_ = new THREE.Quaternion();
+    this.translation_ = new THREE.Vector3();
+    this.phi_ = 0;
+    this.theta_ = 0;
+  }
+
+  update_(timeElapsedS) {
+    this.updadeRotation_(timeElapsedS);
+    this.updateCamera_(timeElapsedS);
+  }
+
+  updateCamera_(_) {
+    this._camera.quaternion.copy(this.rotation_);
+  }
+
+  updateTranslation_(timeElapsedS){
+    const forwardVelocity =  (this.input_.key(KEYS.w) ? 1 : 0)
+  }
+
+  updadeRotation_(timeElapsedS){
+    const xh = this.input_.current_.mouseXDelta / window.innerWidth;
+    const yh = this.input_.current_.mouseYDelta / window.innerHeight;
+    const ur_mum = 3;
+    this.phi_ += -xh * 5; 
+    this.theta_ = clamp(this.theta_ + -yh * 5, Math.PI / ur_mum, Math.PI / ur_mum);
+
+    const qx = new THREE.Quaternion();
+    qx.setFromAxisAngle(new THREE.Vector3(0,1,0), this.phi_);
+    const qz = new THREE.Quaternion();
+    qz.setFromAxisAngle(new THREE.Vector3(1,0,0), this.theta_);
+
+    const q = new THREE.Quaternion();
+    q.multiply(qx);
+    q.multiply(qz);
+    
+    this.rotation_.copy(q);
+  }
+}
 
 class BasicCharacterController {
   constructor(params) {
@@ -12,12 +127,6 @@ class BasicCharacterController {
 
   _Init(params) {
     this._params = params;
-    this._decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0);
-    this._acceleration = new THREE.Vector3(1, 0.25, 50.0);
-    this._velocity = new THREE.Vector3(0, 0, 0);
-
-    this._input = new BasicCharacterControllerInput();
-
     this._LoadModels();
   }
 
@@ -26,135 +135,9 @@ class BasicCharacterController {
   const material = new THREE.MeshStandardMaterial({color: 0x000000,});
   this._target = new THREE.Mesh(boxGeometry,material);
   this._target.scale.setScalar(1);
-  this._target.traverse(c => {
-        c.castShadow = true;
-      });
+  this._target.traverse(c => { c.castShadow = true;});
     this._params.scene.add(this._target);
     this._target.position.set(0,1,0);
-  }
-
-  Update(timeInSeconds) {
-    if (!this._target) {
-      return;
-    }
-
-    const velocity = this._velocity;
-    const frameDecceleration = new THREE.Vector3(
-        velocity.x * this._decceleration.x,
-        velocity.y * this._decceleration.y,
-        velocity.z * this._decceleration.z
-    );
-    frameDecceleration.multiplyScalar(timeInSeconds);
-    frameDecceleration.z = Math.sign(frameDecceleration.z) * Math.min(
-        Math.abs(frameDecceleration.z), Math.abs(velocity.z));
-
-    velocity.add(frameDecceleration);
-
-    const controlObject = this._target;
-    const _Q = new THREE.Quaternion();
-    const _A = new THREE.Vector3();
-    const _R = controlObject.quaternion.clone();
-
-    const acc = this._acceleration.clone();
-    if (this._input._keys.shift) {
-      acc.multiplyScalar(2.0);
-    }
-
-    if (this._input._keys.forward) {
-      velocity.z -= acc.z * timeInSeconds;
-    }
-    if (this._input._keys.backward) {
-      velocity.z += acc.z * timeInSeconds;
-    }
-    if (this._input._keys.left) {
-      _A.set(0, 1, 0);
-      _Q.setFromAxisAngle(_A, 4.0 * Math.PI * timeInSeconds * this._acceleration.y);
-      _R.multiply(_Q);
-    }
-    if (this._input._keys.right) {
-      _A.set(0, 1, 0);
-      _Q.setFromAxisAngle(_A, 4.0 * -Math.PI * timeInSeconds * this._acceleration.y);
-      _R.multiply(_Q);
-    }
-
-    controlObject.quaternion.copy(_R);
-
-    const oldPosition = new THREE.Vector3();
-    oldPosition.copy(controlObject.position);
-
-    const forward = new THREE.Vector3(0, 0, 1);
-    forward.applyQuaternion(controlObject.quaternion);
-    forward.normalize();
-
-    const sideways = new THREE.Vector3(1, 0, 0);
-    sideways.applyQuaternion(controlObject.quaternion);
-    sideways.normalize();
-
-    sideways.multiplyScalar(velocity.x * timeInSeconds);
-    forward.multiplyScalar(velocity.z * timeInSeconds);
-
-    controlObject.position.add(forward);
-    controlObject.position.add(sideways);
-
-    oldPosition.copy(controlObject.position);
-  }
-};
-
-class BasicCharacterControllerInput {
-  constructor() {
-    this._Init();    
-  }
-
-  _Init() {
-    this._keys = {
-      forward: false,
-      backward: false,
-      left: false,
-      right: false,
-      shift: false,
-    };
-    document.addEventListener('keydown', (e) => this._onKeyDown(e), false);
-    document.addEventListener('keyup', (e) => this._onKeyUp(e), false);
-  }
-
-  _onKeyDown(event) {
-    switch (event.keyCode) {
-      case 87: // w
-        this._keys.forward = true;
-        break;
-      case 65: // a
-        this._keys.left = true;
-        break;
-      case 83: // s
-        this._keys.backward = true;
-        break;
-      case 68: // d
-        this._keys.right = true;
-        break;
-      case 16: // SHIFT
-        this._keys.shift = true;
-        break;
-    }
-  }
-
-  _onKeyUp(event) {
-    switch(event.keyCode) {
-      case 87: // w
-        this._keys.forward = false;
-        break;
-      case 65: // a
-        this._keys.left = false;
-        break;
-      case 83: // s
-        this._keys.backward = false;
-        break;
-      case 68: // d
-        this._keys.right = false;
-        break;
-      case 16: // SHIFT
-        this._keys.shift = false;
-        break;
-    }
   }
 };
 
@@ -162,11 +145,12 @@ class CharacterControllerDemo {
   constructor() {
     this._Initialize();
   }
-
+    
   _Initialize() {
     this._threejs = new THREE.WebGLRenderer({
       antialias: true,
     });
+    
     this._threejs.outputEncoding = THREE.sRGBEncoding;
     this._threejs.shadowMap.enabled = true;
     this._threejs.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -184,7 +168,7 @@ class CharacterControllerDemo {
     const near = 1.0;
     const far = 1000.0;
     this._camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    this._camera.position.set(25, 10, 25);
+    this._camera.position.set(10, 2, 10);
 
     this._scene = new THREE.Scene();
 
@@ -205,13 +189,13 @@ class CharacterControllerDemo {
     light.shadow.camera.bottom = -50;
     this._scene.add(light);
 
+    this.uiCamera_ = new THREE.OrthographicCamera(
+      -1, 1, 1 * aspect, -1 * aspect, 1, 1000);
+  this.uiScene_ = new THREE.Scene();
+    
     light = new THREE.AmbientLight(0xFFFFFF, 0.25);
     this._scene.add(light);
 
-    const controls = new OrbitControls(
-      this._camera, this._threejs.domElement);
-    controls.target.set(0, 10, 0);
-    controls.update();
 
     const loader = new THREE.CubeTextureLoader();
     const texture = loader.load([
@@ -227,9 +211,7 @@ class CharacterControllerDemo {
 
     const plane = new THREE.Mesh(
         new THREE.PlaneGeometry(100, 100, 10, 10),
-        new THREE.MeshStandardMaterial({
-            color: 0x808080,
-          }));
+        new THREE.MeshStandardMaterial({color: 0x808080,}));
     plane.castShadow = false;
     plane.receiveShadow = true;
     plane.rotation.x = -Math.PI / 2;
@@ -237,9 +219,8 @@ class CharacterControllerDemo {
 
     const hotel = new THREE.Mesh(
       new THREE.BoxGeometry(35,75,35),
-    new THREE.MeshStandardMaterial({
-      color: 0x418782, 
-    }));
+    new THREE.MeshStandardMaterial({color: 0x418782, }));
+
     hotel.castShadow = false;
     hotel.receiveShadow = true;
     hotel.position.set(40,37,0); 
@@ -247,17 +228,19 @@ class CharacterControllerDemo {
 
     const teleport = new THREE.Mesh(
       new THREE.BoxGeometry(10,10,10),
-    new THREE.MeshStandardMaterial({
-      color: 0x000000, 
-    }));
-    teleport.position.set(20,9,0); 
+    new THREE.MeshStandardMaterial({color: 0x000000, }));
+    teleport.position.set(23,5,0); 
     this._scene.add(teleport);
     this._previousRAF = null;
 
     this._LoadAnimatedModel();
     this._RAF();
+    this.InitializeDemo_();
   }
 
+  InitializeDemo_() {
+    this.fpsCamera_ = new FirstPersonCamera_(_this.camera);
+  }
   _LoadAnimatedModel() {
     const params = {
       camera: this._camera,
@@ -281,6 +264,7 @@ class CharacterControllerDemo {
       this._RAF();
       this._threejs.render(this._scene, this._camera);
       this._Step(t - this._previousRAF);
+      this.threejs_.render(this.uiScene_, this.uiCamera_);
       this._previousRAF = t;
     });
   }
@@ -288,10 +272,10 @@ class CharacterControllerDemo {
   _Step(timeElapsed) {
     const timeElapsedS = timeElapsed * 0.001;
 
-    if (this._controls) {
-      this._controls.Update(timeElapsedS);
-    }
+      //this._controls.Update(timeElapsedS);
+      this.fpsCamera_.update(timeElapsedS);
   }
+  
 }
 
 let _APP = null;
