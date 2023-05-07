@@ -12,13 +12,13 @@
 	// "features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [6000],
+	"forwardPorts": [3000],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "npm install",
 	"portsAttributes": {
-		"6000": {
-			"label": "6001"
+		"3001": {
+			"label": "3000"
 		}
 	}
 
