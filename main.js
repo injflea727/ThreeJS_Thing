@@ -1,6 +1,7 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.136/build/three.module.js';
 
 import {FirstPersonControls} from 'https://cdn.skypack.dev/three@0.136/examples/jsm/controls/FirstPersonControls.js';
+import {PointerLockControls} from 'https://cdn.jsdelivr.net/npm/three@0.112.1/examples/jsm/controls/PointerLockControls.js';
 
 const KEYS = {
   'a': 65,
@@ -38,8 +39,11 @@ class InputController {
   }
 
   onMouseMove_(e) {
-    this.current_.mouseX = e.pageX - window.innerWidth / 2;
-    this.current_.mouseY = e.pageY - window.innerHeight / 2;
+    this.current_.mouseX += e.movementX;
+    this.current_.mouseY += e.movementY;
+
+    this.current_.mouseX = this.current_.mouseX 
+    this.current_.mouseY = this.current_.mouseY
 
     if (this.previous_ === null) {
       this.previous_ = {...this.current_};
@@ -102,7 +106,7 @@ class InputController {
 };
 
 class FirstPersonCamera {
-  constructor(camera) {
+  constructor(camera,objects,sensitivity) {
     this.camera_ = camera;
     this.input_ = new InputController();
     this.rotation_ = new THREE.Quaternion();
@@ -111,6 +115,8 @@ class FirstPersonCamera {
     this.phiSpeed_ = 8;
     this.theta_ = 0;
     this.thetaSpeed_ = 5;
+    this.sensitivity_ = sensitivity;
+    this.objects_ = objects;
   }
 
   update(timeElapsedS) {
@@ -145,8 +151,8 @@ class FirstPersonCamera {
   }
 
   updateRotation_(timeElapsedS) {
-    const xh = this.input_.current_.mouseXDelta / window.innerWidth;
-    const yh = this.input_.current_.mouseYDelta / window.innerHeight;
+    const xh = this.input_.current_.mouseXDelta / window.innerWidth  * this.sensitivity_;
+    const yh = this.input_.current_.mouseYDelta / window.innerHeight  * this.sensitivity_;
 
     this.phi_ += -xh * this.phiSpeed_;
     this.theta_ = clamp(this.theta_ + -yh * this.thetaSpeed_, -Math.PI / 3, Math.PI / 3);
@@ -187,7 +193,8 @@ class FirstPersonCameraDemo {
     // this.controls_.lookSpeed = 0.8;
     // this.controls_.movementSpeed = 5;
 
-    this.fpsCamera_ = new FirstPersonCamera(this.camera_);
+    this.fpsCamera_ = new FirstPersonCamera(this.camera_,this.objects_,0.3);
+    
   }
 
   initializeRenderer_() {
@@ -256,28 +263,39 @@ class FirstPersonCameraDemo {
       new THREE.MeshStandardMaterial({color: 0x437144,}));
     box.castShadow = false;
     box.receiveShadow = true;
-    box.position.set(10,2.5,0);
+    box.position.set(24,2.5,0);
     this.scene_.add(box);
+    const meshes = [
+      plane, hotel, box];
+
+      this.objects_ = [];
+
+      for (let i = 0; i < meshes.length; ++i) {
+        const b = new THREE.Box3();
+        b.setFromObject(meshes[i]);
+        this.objects_.push(b);
+      }
+
   }
 
   initializeLights_() {
-    const distance = 500.0;
+    const distance = 50000.0;
     const angle = Math.PI / 4.0;
     const penumbra = 0.5;
     const decay = 1.0;
 
-    let random = new THREE.SpotLight();
-    random.castShadow = true
+
     let light = new THREE.SpotLight(
         0xFFFFFF, 100.0, distance, angle, penumbra, decay);
     light.castShadow = true;
     light.shadow.bias = -0.00001;
     light.shadow.mapSize.width = 4096;
     light.shadow.mapSize.height = 4096;
-    light.shadow.camera.near = 1;
-    light.shadow.camera.far = 100;
+    light.shadow.camera.near = 500;
+    light.shadow.camera.far = 1000;
 
-    light.position.set(0, 25, 0);
+    light.position.set(0, 50, 0);
+    
     light.lookAt(0, 0, 0);
     this.scene_.add(light);
 
@@ -332,6 +350,12 @@ let _APP = null;
 
 window.addEventListener('DOMContentLoaded', () => {
   _APP = new FirstPersonCameraDemo();
+  console.log(_APP.threejs_.domElement)
+  _APP.threejs_.domElement.addEventListener('click', e => {
+      _APP.threejs_.domElement.requestPointerLock({
+        unadjustedMovement: true
+      })
+  })
 });
 // class BasicCharacterController {
 //   constructor(params) {
