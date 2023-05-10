@@ -270,6 +270,8 @@ class FirstPersonCameraDemo {
       plane, hotel, box];
 
       this.objects_ = [];
+    
+      this.check = [box,hotel];
 
       for (let i = 0; i < meshes.length; ++i) {
         const b = new THREE.Box3();
@@ -280,22 +282,17 @@ class FirstPersonCameraDemo {
   }
 
   collisionDetection_() {
-    const position = new THREE.Vector3();
-    const direction = new THREE.Vector3();
 
-    this.raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0.0, 100.0);
 
-    this.camera_.getWorldDirection(direction);
-    this.camera_.getWorldPosition(position);
+    this.raycaster = new THREE.Raycaster();
+    this.raycaster.set(this.camera_.getWorldPosition(), this.camera_.getWorldDirection());
+    this.scene_.add(new THREE.ArrowHelper( this.raycaster.ray.direction, this.raycaster.ray.origin, 100, Math.random() * 0xffffff ));
 
-    this.raycaster.set(position, direction);
+    const intersections = this.raycaster.intersectObjects(this.check, true);
 
-    const intersections = this.raycaster.intersectObjects(this.scene_.children, true);
-
-    if (intersections[0]) {
+    if (intersections.length > 0) {
       alert("will it work");
     }
-    direction.normalize();
   }
 
   initializeLights_() {
