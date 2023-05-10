@@ -250,10 +250,6 @@ class FirstPersonCameraDemo {
     plane.receiveShadow = true;
     plane.rotation.x = -Math.PI / 2;
     this.scene_.add(plane);
-
-    const cameraBounds = new THREE.Sphere(new THREE.Vector3(),0.5);
-    cameraBounds.center.copy(this.camera_.position);
-    this.scene_.add(cameraBounds);
   
     const hotel = new THREE.Mesh(
       new THREE.BoxGeometry(35, 65, 35),
@@ -297,7 +293,7 @@ class FirstPersonCameraDemo {
     const intersections = this.raycaster.intersectObjects(this.scene_.children, true);
 
     if (intersections[0]) {
-      alert("will it work")
+      alert("will it work");
     }
     direction.normalize();
   }
