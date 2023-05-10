@@ -282,13 +282,19 @@ class FirstPersonCameraDemo {
   }
 
   collisionDetection_() {
+    const position = new THREE.Vector3();
+    const direction = new THREE.Vector3();
 
+    const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3());
 
-    this.raycaster = new THREE.Raycaster();
-    this.raycaster.set(this.camera_.getWorldPosition(), this.camera_.getWorldDirection());
-    this.scene_.add(new THREE.ArrowHelper( this.raycaster.ray.direction, this.raycaster.ray.origin, 100, Math.random() * 0xffffff ));
+    this.camera_.getWorldPosition(position);
+    this.camera_.getWorldDirection(direction);
 
-    const intersections = this.raycaster.intersectObjects(this.check, true);
+    raycaster.set(position, direction);
+    raycaster.ray.origin.copy(this.camera_.position);
+    this.scene_.add(new THREE.ArrowHelper(raycaster.ray.direction, raycaster.ray.origin, 10, Math.random() * 0xffffff ));
+
+    const intersections = raycaster.intersectObjects(this.check, true);
 
     if (intersections.length > 0) {
       alert("will it work");
@@ -360,6 +366,7 @@ class FirstPersonCameraDemo {
 
     // this.controls_.update(timeElapsedS);
     this.fpsCamera_.update(timeElapsedS);
+    
   }
 }
 
