@@ -181,7 +181,6 @@ class FirstPersonCameraDemo {
     this.initializeScene_();
     this.initializePostFX_();
     this.initializeDemo_();
-    this.collisionDetection_();
 
     this.previousRAF_ = null;
     this.raf_();
@@ -195,7 +194,6 @@ class FirstPersonCameraDemo {
     // this.controls_.movementSpeed = 5;
 
     this.fpsCamera_ = new FirstPersonCamera(this.camera_,this.objects_,0.3);
-    
   }
 
   initializeRenderer_() {
@@ -208,6 +206,7 @@ class FirstPersonCameraDemo {
     this.threejs_.setSize(window.innerWidth, window.innerHeight);
     this.threejs_.physicallyCorrectLights = true;
     this.threejs_.outputEncoding = THREE.sRGBEncoding;
+    this.raycaster_ = new THREE.Raycaster();
 
     document.body.appendChild(this.threejs_.domElement);
 
@@ -265,8 +264,7 @@ class FirstPersonCameraDemo {
     box.receiveShadow = true;
     box.position.set(24,2.5,0);
     this.scene_.add(box);
-    const meshes = [
-      plane, hotel, box];
+    const meshes = [hotel, box];
 
       this.objects_ = [];
     
@@ -288,32 +286,11 @@ class FirstPersonCameraDemo {
     metalMap.wrapS = THREE.RepeatWrapping;
     metalMap.wrapT = THREE.RepeatWrapping;
     metalMap.repeat.set(tiling, tiling);
-
     const material = new THREE.MeshStandardMaterial({
       metalnessMap: metalMap,
     });
 
     return material;
-  }
-
-  collisionDetection_() {
-    const position = new THREE.Vector3();
-    const direction = new THREE.Vector3();
-
-    const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3());
-
-    this.camera_.getWorldPosition(position);
-    this.camera_.getWorldDirection(direction);
-
-    raycaster.set(position, direction);
-    raycaster.ray.origin.copy(this.camera_.position);
-    this.scene_.add(new THREE.ArrowHelper(raycaster.ray.direction, raycaster.ray.origin, 10, Math.random() * 0xffffff ));
-
-    const intersections = raycaster.intersectObjects(this.check, true);
-
-    if (intersections.length > 0) {
-      alert("will it work");
-    }
   }
 
   initializeLights_() {
@@ -381,7 +358,14 @@ class FirstPersonCameraDemo {
 
     // this.controls_.update(timeElapsedS);
     this.fpsCamera_.update(timeElapsedS);
-    
+    this.scene_.remove(this.arrrow);
+    this.arrrow = new THREE.ArrowHelper(this.raycaster_.ray.direction, this.raycaster_.ray.origin, 10, Math.random() * 0xffffff );
+    this.scene_.add(this.arrrow);
+    this.raycaster_.set(this.camera_.position, this.camera_.getWorldDirection(new THREE.Vector3()));    
+    this.intersections_ = this.raycaster_.intersectObjects(this.check, true);
+    if (this.intersections_[0]) {
+          
+    }
   }
 }
 
@@ -416,3 +400,23 @@ window.addEventListener('DOMContentLoaded', () => {
 //     this._target.position.set(0,1,0);
 //   }
 // };
+
+// collisionDetection_() {
+//   const position = new THREE.Vector3();
+//   const direction = new THREE.Vector3();
+
+//   const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3());
+
+//   this.camera_.getWorldPosition(position);
+//   this.camera_.getWorldDirection(direction);
+
+//   raycaster.set(position, direction);
+//   raycaster.ray.origin.copy(this.camera_.position);
+//   this.scene_.add(new THREE.ArrowHelper(raycaster.ray.direction, raycaster.ray.origin, 10, Math.random() * 0xffffff ));
+
+//   const intersections = raycaster.intersectObjects(this.check, true);
+
+//   if (intersections.length > 0) {
+//     alert("will it work");
+//   }
+// }
