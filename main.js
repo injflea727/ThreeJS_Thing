@@ -253,15 +253,14 @@ class FirstPersonCameraDemo {
   
     const hotel = new THREE.Mesh(
       new THREE.BoxGeometry(35, 65, 35),
-      new THREE.MeshStandardMaterial({color: 0x808080,}));
+      this.loadMaterial_('concrete3-metallic', 0.2));
     hotel.castShadow = false;
     hotel.receiveShadow = true;
     hotel.position.set(40,30,0);
     this.scene_.add(hotel);
-
     const box = new THREE.Mesh(
       new THREE.BoxGeometry(5, 5, 5),
-      new THREE.MeshStandardMaterial({color: 0x437144,}));
+      new THREE.MeshStandardMaterial({color: 0x808080,}));
     box.castShadow = false;
     box.receiveShadow = true;
     box.position.set(24,2.5,0);
@@ -279,6 +278,22 @@ class FirstPersonCameraDemo {
         this.objects_.push(b);
       }
 
+  }
+  loadMaterial_(name, tiling) {
+    const mapLoader = new THREE.TextureLoader();
+    const maxAnisotropy = this.threejs_.capabilities.getMaxAnisotropy();
+  
+    const metalMap = mapLoader.load('resources/' + name + 'metallic.png');
+    metalMap.anisotropy = maxAnisotropy;
+    metalMap.wrapS = THREE.RepeatWrapping;
+    metalMap.wrapT = THREE.RepeatWrapping;
+    metalMap.repeat.set(tiling, tiling);
+
+    const material = new THREE.MeshStandardMaterial({
+      metalnessMap: metalMap,
+    });
+
+    return material;
   }
 
   collisionDetection_() {
