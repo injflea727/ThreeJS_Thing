@@ -287,6 +287,13 @@ class FirstPersonCameraDemo {
     metalMap.wrapT = THREE.RepeatWrapping;
     metalMap.repeat.set(tiling, tiling);
 
+    const albedo = mapLoader.load('resources/freepbr/' + name + 'albedo.png');
+    albedo.anisotropy = maxAnisotropy;
+    albedo.wrapS = THREE.RepeatWrapping;
+    albedo.wrapT = THREE.RepeatWrapping;
+    albedo.repeat.set(tiling, tiling);
+    albedo.encoding = THREE.sRGBEncoding;
+
     const normalMap = mapLoader.load('resources/' + name + 'normal.jpg');
     normalMap.anisotropy = maxAnisotropy;
     normalMap.wrapS = THREE.RepeatWrapping;
@@ -294,6 +301,7 @@ class FirstPersonCameraDemo {
     normalMap.repeat.set(tiling, tiling);
     const material = new THREE.MeshStandardMaterial({
       metalnessMap: metalMap,
+      map: albedo,
       normalMap: normalMap,
     });
 
