@@ -252,14 +252,14 @@ class FirstPersonCameraDemo {
   
     const hotel = new THREE.Mesh(
       new THREE.BoxGeometry(35, 65, 35),
-      this.loadMaterial_('concrete3-metallic', 0.2));
+      this.loadMaterial_('concrete3-', 0.2));
     hotel.castShadow = false;
     hotel.receiveShadow = true;
     hotel.position.set(40,30,0);
     this.scene_.add(hotel);
     const box = new THREE.Mesh(
       new THREE.BoxGeometry(5, 5, 5),
-      new THREE.MeshStandardMaterial({color: 0x808080,}));
+      this.loadMaterial_('15754-', 1));
     box.castShadow = false;
     box.receiveShadow = true;
     box.position.set(24,2.5,0);
@@ -286,8 +286,15 @@ class FirstPersonCameraDemo {
     metalMap.wrapS = THREE.RepeatWrapping;
     metalMap.wrapT = THREE.RepeatWrapping;
     metalMap.repeat.set(tiling, tiling);
+
+    const normalMap = mapLoader.load('resources/' + name + 'normal.jpg');
+    normalMap.anisotropy = maxAnisotropy;
+    normalMap.wrapS = THREE.RepeatWrapping;
+    normalMap.wrapT = THREE.RepeatWrapping;
+    normalMap.repeat.set(tiling, tiling);
     const material = new THREE.MeshStandardMaterial({
       metalnessMap: metalMap,
+      normalMap: normalMap,
     });
 
     return material;
