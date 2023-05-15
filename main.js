@@ -250,9 +250,11 @@ class FirstPersonCameraDemo {
     plane.rotation.x = -Math.PI / 2;
     this.scene_.add(plane);
   
+    const concreteMaterial = this.loadMaterial_('concrete3-', 4);
+
     const hotel = new THREE.Mesh(
       new THREE.BoxGeometry(35, 65, 35),
-      this.loadMaterial_('concrete3-', 0.2));
+      concreteMaterial);
     hotel.castShadow = false;
     hotel.receiveShadow = true;
     hotel.position.set(40,30,0);
@@ -260,7 +262,7 @@ class FirstPersonCameraDemo {
     const box = new THREE.Mesh(
       new THREE.BoxGeometry(5, 5, 5),
       this.loadMaterial_('15754-', 1));
-    box.castShadow = false;
+    box.castShadow = true;
     box.receiveShadow = true;
     box.position.set(24,2.5,0);
     this.scene_.add(box);
@@ -287,7 +289,7 @@ class FirstPersonCameraDemo {
     metalMap.wrapT = THREE.RepeatWrapping;
     metalMap.repeat.set(tiling, tiling);
 
-    const albedo = mapLoader.load('resources/freepbr/' + name + 'albedo.png');
+    const albedo = mapLoader.load('resources/' + name + 'albedo.png');
     albedo.anisotropy = maxAnisotropy;
     albedo.wrapS = THREE.RepeatWrapping;
     albedo.wrapT = THREE.RepeatWrapping;
